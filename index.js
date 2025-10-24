@@ -39,13 +39,17 @@ let shouldResetDisplay = false;
 buttons.forEach(button => {
     button.addEventListener("click", () => {
         if (button.classList.contains("number")) {
-            appendNumber(button.dataset.num);
+            appendNumber(button.dataset.num || button.textContent);
         } else if (button.classList.contains("operator")) {
-            chooseOperator(button.dataset.op);
-        } else if (button.id === "equals") {
+            chooseOperator(button.dataset.op || button.textContent);
+        } else if (button.classList.contains("equal") || button.id === "equals") {
             evaluate();
-        } else if (button.id === "clear") {
+        } else if (button.classList.contains("clear") || button.id === "clear") {
             clear();
+        } else if (button.classList.contains("backspace")) {
+            backspace();
+        } else if (button.classList.contains("decimal")) {
+            appendDecimal();
         }
     });
 });
@@ -69,7 +73,11 @@ function evaluate() {
     if (currentOperator === null || shouldResetDisplay) return;
     secondNumber = display.textContent;
     let result = operate(currentOperator, parseFloat(firstNumber), parseFloat(secondNumber));
-    display.textContent = (Math.round(result * 100) / 100).toString();
+    if (result === "Error") {
+        display.textContent = "Cannot divide by 0";
+    } else {
+        display.textContent = (Math.round(result * 100) / 100).toString();
+    }
     currentOperator = null;
 }
 
@@ -78,4 +86,20 @@ function clear() {
     firstNumber = "";
     secondNumber = "";
     currentOperator = null;
+}
+
+function backspace() {
+    if (shouldResetDisplay) return;
+    display.textContent = display.textContent.slice(0, -1);
+    if (display.textContent === "") display.textContent = "0";
+}
+
+function appendDecimal() {
+    if (shouldResetDisplay) {
+        display.textContent = "0";
+        shouldResetDisplay = false;
+    }
+    if (!display.textContent.includes(".")) {
+        display.textContent += ".";
+    }
 }
